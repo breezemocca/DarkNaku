@@ -12,14 +12,14 @@ MonoBehaviour 베이스에 간단한 FSM(Finite State Machine) 프레임워크�
 **FSMBehaviour\<S, M>** 는 머신 클래스이고 S는 enum 타입 M은 FSMBehaviour를 상속받는 클래스의 타입입니다.
 
 ```
-public enum CAMERA_STATE { IDLE, MOVE, LOCK }
-public class CameraController : FSMBehaviour<CAMERA_STATE, CameraController>
+public enum STATE { IDLE, MOVE, LOCK }
+public class MachineController : FSMBehaviour<STATE, MachineController>
 ```
 
 **FSMState\<S, M>** 상태 클래스이며 S와 M의 타입은 머신 클래스와 동일한 타입을 받아야 합니다.
 
 ```
-public class IdleState : FSMState<CAMERA_STATE, CameraController>
+public class IdleState : FSMState<STATE, MachineController>
 ```
 
 ## 속성
