@@ -4,7 +4,7 @@
 
 #### 설명
 
-로딩 Scene을 포함하여 Unity Scene 사이의 전환을 관리하는 Singleton MonoBehaviour 기반의 클래스 입니다.
+로딩 Scene을 포함하여 Unity Scene 사이의 전환을 관리하는 클래스 입니다.
 
 
 
