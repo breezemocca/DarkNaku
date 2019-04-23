@@ -26,12 +26,12 @@ namespace DarkNaku {
             }
         }
 
-		private void OnApplicationQuit() {
+		protected void OnApplicationQuit() {
             _isQuitting = true;
 			OnApplicationQuitting();
 		}
 
-        private void OnDestroy() {
+        protected void OnDestroy() {
             _isQuitting = true;
 			OnDestroying();
         }
