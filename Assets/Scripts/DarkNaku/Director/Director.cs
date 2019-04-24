@@ -2,43 +2,50 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using DarkNaku;
 
 namespace DarkNaku {
     public sealed class Director : SingletonBehaviour<Director> {
+        public static bool IsChanging { get { return Instance._isChanging; } }
+
+        public static float MinRetentionTime { 
+            get { return Instance._minRetentionTime; } 
+            set { Instance._minRetentionTime = value; }
+        }
+
         public static string LoadingSceneName {
             get { return Instance._loadingSceneName; }
             set { Instance._loadingSceneName = value; }
         }
 
-        public static bool IsChanging { get { return Instance._isChanging; } }
-
         private bool _isChanging = false;
+        private float _minRetentionTime = 0F;
         private string _loadingSceneName = null;
 
-        public static void ChangeScene(string loadingSceneName, string nextSceneName, float endureTime = 0F) {
+        public static void ChangeScene(string loadingSceneName, string nextSceneName) {
             LoadingSceneName = loadingSceneName;
-            ChangeScene(nextSceneName, endureTime);
+            ChangeScene(nextSceneName);
         }
 
-        public static void ChangeScene(string nextSceneName, float endureTime = 0F) {
+        public static void ChangeScene(string nextSceneName) {
             Assert.IsFalse(Instance._isChanging, 
                 "[Director] ChangeScene : This method could not call by continuous.");
             Assert.IsFalse(string.IsNullOrEmpty(LoadingSceneName),
                 "[Director] ChangeScene : 'Director.LoadingSceneName' property is null or empty.");
-            Instance.StartCoroutine(Instance.CoChangeScene(nextSceneName, endureTime, endureTime));
+            Instance.StartCoroutine(Instance.CoChangeScene(nextSceneName));
         }
 
         private void Awake() {
             DontDestroyOnLoad(gameObject);
         }
 
-        private IEnumerator CoChangeScene(string nextSceneName, float endureTime, object param) {
+        private IEnumerator CoChangeScene(string nextSceneName) {
             if (_isChanging) yield break;
 
             _isChanging = true;
-
+            if (EventSystem.current != null) EventSystem.current.enabled = false;
             Scene currentScene = SceneManager.GetActiveScene();
             ISceneHandler currentSceneHandler = FindHandler<ISceneHandler>(currentScene);
             yield return SceneManager.LoadSceneAsync(_loadingSceneName, LoadSceneMode.Additive);
@@ -70,15 +77,18 @@ namespace DarkNaku {
                 loader.OnProgress(1F);
             }
 
-            float elapsedTime = Time.time - startTime;
-
-            if (elapsedTime < endureTime) {
-                yield return new WaitForSeconds(endureTime - elapsedTime);
-            }
-
             currentScene = SceneManager.GetSceneByName(nextSceneName);
+            EventSystem eventSystem = GetEventSystemInScene(currentScene);
+            if (eventSystem != null) eventSystem.enabled = false;
             while (currentScene.isLoaded == false) yield return null;
             SceneManager.SetActiveScene(currentScene);
+
+            float elapsedTime = Time.time - startTime;
+
+            if (elapsedTime < _minRetentionTime) {
+                yield return new WaitForSeconds(_minRetentionTime - elapsedTime);
+            }
+
             currentSceneHandler = FindHandler<ISceneHandler>(currentScene);
 
             if (currentSceneHandler != null) currentSceneHandler.OnLoadScene();
@@ -86,6 +96,8 @@ namespace DarkNaku {
             if (currentSceneHandler != null) currentSceneHandler.OnEndInAnimation();
 
             SceneManager.UnloadSceneAsync(loadingScene); // Need Yield ???
+            if (eventSystem != null) eventSystem.enabled = true;
+
             _isChanging = false;
         }
 
@@ -111,6 +123,16 @@ namespace DarkNaku {
 
             ao.allowSceneActivation = true;
             yield return null;
+        }
+
+        private EventSystem GetEventSystemInScene(Scene scene) {
+            EventSystem[] ess = EventSystem.FindObjectsOfType<EventSystem>();
+
+            for (int i = 0; i < ess.Length; i++) {
+                if (ess[i].gameObject.scene == scene) return ess[i];
+            }
+
+            return null;
         }
     }
 }
