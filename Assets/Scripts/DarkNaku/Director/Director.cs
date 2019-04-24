@@ -8,49 +8,36 @@ using DarkNaku;
 
 namespace DarkNaku {
     public sealed class Director : SingletonBehaviour<Director> {
-        public static bool IsChanging { get { return Instance._isChanging; } }
-
-        public static float MinRetentionTime { 
-            get { return Instance._minRetentionTime; } 
-            set { Instance._minRetentionTime = value; }
-        }
-
-        public static string LoadingSceneName {
-            get { return Instance._loadingSceneName; }
-            set { Instance._loadingSceneName = value; }
-        }
-
-        private bool _isChanging = false;
-        private float _minRetentionTime = 0F;
-        private string _loadingSceneName = null;
-
-        public static void ChangeScene(string loadingSceneName, string nextSceneName) {
-            LoadingSceneName = loadingSceneName;
-            ChangeScene(nextSceneName);
-        }
+        public static bool IsChanging { get; private set; }
+        public static float MinRetentionTime { get; set; }
+        public static string LoadingSceneName { get; set; }
 
         public static void ChangeScene(string nextSceneName) {
-            Assert.IsFalse(Instance._isChanging, 
+            ChangeScene(LoadingSceneName, nextSceneName);
+        }
+
+        public static void ChangeScene(string loadingSceneName, string nextSceneName) {
+            Assert.IsFalse(IsChanging,
                 "[Director] ChangeScene : This method could not call by continuous.");
             Assert.IsFalse(string.IsNullOrEmpty(LoadingSceneName),
                 "[Director] ChangeScene : 'Director.LoadingSceneName' property is null or empty.");
-            Instance.StartCoroutine(Instance.CoChangeScene(nextSceneName));
+            Instance.StartCoroutine(Instance.CoChangeScene(loadingSceneName, nextSceneName));
         }
 
         private void Awake() {
             DontDestroyOnLoad(gameObject);
         }
 
-        private IEnumerator CoChangeScene(string nextSceneName) {
-            if (_isChanging) yield break;
+        private IEnumerator CoChangeScene(string loadingSceneName, string nextSceneName) {
+            if (IsChanging) yield break;
 
-            _isChanging = true;
+            IsChanging = true;
             if (EventSystem.current != null) EventSystem.current.enabled = false;
             Scene currentScene = SceneManager.GetActiveScene();
             ISceneHandler currentSceneHandler = FindHandler<ISceneHandler>(currentScene);
-            yield return SceneManager.LoadSceneAsync(_loadingSceneName, LoadSceneMode.Additive);
+            yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
 
-            Scene loadingScene = SceneManager.GetSceneByName(_loadingSceneName);
+            Scene loadingScene = SceneManager.GetSceneByName(loadingSceneName);
             while (loadingScene.isLoaded == false) yield return null;
 
             SceneManager.SetActiveScene(loadingScene);
@@ -85,8 +72,8 @@ namespace DarkNaku {
 
             float elapsedTime = Time.time - startTime;
 
-            if (elapsedTime < _minRetentionTime) {
-                yield return new WaitForSeconds(_minRetentionTime - elapsedTime);
+            if (elapsedTime < MinRetentionTime) {
+                yield return new WaitForSeconds(MinRetentionTime - elapsedTime);
             }
 
             currentSceneHandler = FindHandler<ISceneHandler>(currentScene);
@@ -98,7 +85,7 @@ namespace DarkNaku {
             SceneManager.UnloadSceneAsync(loadingScene); // Need Yield ???
             if (eventSystem != null) eventSystem.enabled = true;
 
-            _isChanging = false;
+            IsChanging = false;
         }
 
         private T FindHandler<T>(Scene scene) where T : class {
