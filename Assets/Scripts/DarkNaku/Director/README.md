@@ -4,8 +4,7 @@
 
 #### 설명
 
-로딩 Scene을 포함하여 Unity Scene 사이의 전환을 관리하는 클래스 입니다.
-
+로딩 Scene을 포함하여 Unity Scene 사이의 전환을 관리하는 클래스 입니다.전환시 사용자 입력을 막기위해 각 Scene의 EventSystem을 진행상태에 따라서 비활성화 시켜줍니다.
 
 
 ## 클래스
@@ -46,7 +45,7 @@ Scene 전환이 진행 중인지 확인 (읽기전용)
 
 Scene 전환을 실행하는 함수
 
-loadingSceneName : 로딩 Scene 이름이며 호출시 LoadingSceneName에 저장됩니다.
+loadingSceneName : 로딩 Scene 이름이며 호출시에 일회성으로 사용되고 LoadingSceneName 속성값은 변경되지 않습니다.
 
 nextSceneName : 다음 Scene 이름
 
@@ -54,7 +53,7 @@ nextSceneName : 다음 Scene 이름
 
 **public static void ChangeScene(string nextSceneName)**
 
-Scene 전환을 실행하는 함수. LoadingSceneName을 미리 설정 후에 호출해야 합니다.
+Scene 전환을 실행하는 함수. LoadingSceneName을 미리 설정 된 로딩 Scene으로 전환이 동작합니다. LoadingSceneName을 호출 전에 설정해야 합니다.
 
 nextSceneName : 다음 Scene 이름
 
@@ -67,7 +66,6 @@ nextSceneName : 다음 Scene 이름
 ### ISceneHandler
 
 Scene 전환시 이벤트에 대한 인터페이스 입니다. Hierarchy 최상단에 있는 GameObject들 중에서 검색하여 해당 인터페이스를 상속 받은 컴포넌트가 있는 경우 이벤트 함수가 호출 됩니다. 상속받은 컴포넌트가 여러개여도 가장 먼저 검색된 하나만 호출됩니다.
-
 
 
 ### 이벤트
