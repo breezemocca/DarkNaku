@@ -22,23 +22,27 @@ Inherits from : SingletonMonobehaviour\<T>
 
 
 
-**public static string LoadingSceneName;**
-
-로딩 Scene의 이름
-
-
-
 **public static bool IsChanging;**
 
 Scene 전환이 진행 중인지 확인 (읽기전용)
 
+
+**public static float MinRetentionTime;**
+
+로딩 최소 유지 시간. 이전 Scene 해제와 다음 Scene 로드를 빨리 완료 했어도 최소 로딩 유지시간이 지난 후에 다음 Scene 진입 연출이 시작됩니다.
+기본값은 0초 입니다.
+
+
+**public static string LoadingSceneName;**
+
+로딩 Scene의 이름
 
 
 ### 함수
 
 
 
-**public static void ChangeScene(string loadingSceneName, string nextSceneName, float endureTime = 0F);**
+**public static void ChangeScene(string loadingSceneName, string nextSceneName);**
 
 Scene 전환을 실행하는 함수
 
@@ -46,17 +50,13 @@ loadingSceneName : 로딩 Scene 이름이며 호출시 LoadingSceneName에 저�
 
 nextSceneName : 다음 Scene 이름
 
-endureTime : Scene 전환시 최소 이 시간만큼은 유지 후에 전환 됩니다. 기본값은 0초 입니다.
 
 
-
-**public static void ChangeScene(string nextSceneName, float endureTime = 0F)**
+**public static void ChangeScene(string nextSceneName)**
 
 Scene 전환을 실행하는 함수. LoadingSceneName을 미리 설정 후에 호출해야 합니다.
 
 nextSceneName : 다음 Scene 이름
-
-endureTime : Scene 전환시 최소 이 시간만큼은 유지 후에 전환 됩니다. 기본값은 0초 입니다.
 
 
 
@@ -123,9 +123,3 @@ Scene전환 진행 상황이 변할 때 0~1 사이의 값으로 발생합니다.
 **IEnumerator CoOutAnimation();**
 
 로딩 화면에서 빠저나가는 연출을 구현하는 이벤트 입니다.
-
-
-
-## 개발 예정 기능
-
-* 로딩 화면부터 시작할 수 있도록
